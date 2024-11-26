@@ -1,100 +1,197 @@
-import React, { useState, useEffect, useRef } from "react";
-import { View, useWindowDimensions, Text, StyleSheet, TouchableOpacity, ScrollView, Animated, Easing, useColorScheme } from "react-native";
+import React, { useState, useCallback, useRef } from "react";
+import { View, Dimensions, Text, StyleSheet, TouchableOpacity, Animated, Easing, } from "react-native";
 import { Colors } from "@/constants/Colors";
 import moment from 'moment';
 import 'moment/locale/ko';
 import { useNavigation } from "@react-navigation/native";
+import { GestureHandlerRootView, PanGestureHandler } from 'react-native-gesture-handler';
+import GetScheduleListsAPI from '../restAPIComponents/GetScheduleListsAPI';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRoute, useFocusEffect } from '@react-navigation/native';
 
+const { width } = Dimensions.get('window');
 
-const events = [
-    { id: 1, title: 'Meeting with Bob', date: moment().set({ date: 5, month: moment().month() }) },
-    { id: 2, title: 'Project Deadline', date: moment().set({ date: 10, month: moment().month() }) },
-    { id: 3, title: 'Dinner with Alice', date: moment().set({ date: 15, month: moment().month() }) },
+const holidays = [
+    // { date: '2024-01-01', name: '신정' },
+    // { date: '2024-02-09', name: '설날 연휴' },
+    // { date: '2024-02-10', name: '설날' },
+    // { date: '2024-02-11', name: '설날 연휴' },
+    // { date: '2024-03-01', name: '삼일절' },
+    // { date: '2024-05-05', name: '어린이날' },
+    // { date: '2024-05-15', name: '부처님 오신 날' },
+    // { date: '2024-06-06', name: '현충일' },
+    // { date: '2024-08-15', name: '광복절' },
+    // { date: '2024-09-17', name: '추석 연휴' },
+    // { date: '2024-09-18', name: '추석' },
+    // { date: '2024-09-19', name: '추석 연휴' },
+    // { date: '2024-10-03', name: '개천절' },
+    // { date: '2024-10-09', name: '한글날' },
+    // { date: '2024-12-25', name: '성탄절' },
 ];
 
-const Month = () => {
-    const isDarkMode = useColorScheme() === 'dark';
+const Month = ({ setCurrentView, setStartDateVal, setMonthtDateVal, dayDateVal, weekDateVal,
+    setDaytDateVal, setWeektDateVal }) => {
     const [currentMonth, setCurrentMonth] = useState(moment());
     const navigation = useNavigation();
+    const [isSwiping, setIsSwiping] = useState(false);
+    const route = useRoute();
+    const startOfMonth = currentMonth.clone().startOf('month');
+    const endOfMonth = currentMonth.clone().endOf('month');
+    const startOfWeek = startOfMonth.clone().startOf('week');
+    const endOfWeek = endOfMonth.clone().endOf('week').add(8, 'days');
+    const [events, setEvents] = useState([]);
 
-    // 애니메이션 값 정의
-    const slideAnim = useRef(new Animated.Value(0)).current;
+    let { checkedItem } = route.params || {};
+    let getCheckedItems = {};
+    let getOwnerIds = {};
 
-    const onClick = (key) => {
-        navigation.navigate('Day', {selectedKey: key});
-    }
+    useFocusEffect(
+        useCallback(() => {
+            const initialDate = dayDateVal ? moment(dayDateVal) : weekDateVal ? moment(weekDateVal) : currentMonth;
+            setCurrentMonth(initialDate);
+            setMonthtDateVal(initialDate.format('YYYY-MM-DD'));
+            setDaytDateVal('');
+            setWeektDateVal('');
+        }, [dayDateVal, weekDateVal])
+    );
 
-    // 애니메이션 실행 함수
-    const triggerAnimation = (direction) => {
-        console.log(direction);
-        Animated.timing(slideAnim, {
-            toValue: direction === 'left' ? -1 : 1,
-            duration: 300,
-            useNativeDriver: true,
-            easing: Easing.ease,
-        }).start(() => {
-            slideAnim.setValue(0);  // 애니메이션 종료 후 값 초기화
-        });
+    useFocusEffect(
+        useCallback(() => {
+            const settingCheckValue = async () => {
+                await scheduleListSet();
+            };
+            settingCheckValue();
+        }, [currentMonth, checkedItem])
+    );
+
+
+    async function scheduleListSet() {
+        const selectedItems = await AsyncStorage.getItem('selectedItems');
+        if (selectedItems) getCheckedItems = JSON.parse(selectedItems);
+
+        const ownerData = await AsyncStorage.getItem('initialOwnerId');
+        if (ownerData) getOwnerIds = JSON.parse(ownerData);
+
+        let selectedEntries = [];
+
+        selectedEntries = Object.entries(getCheckedItems);
+        const ownerIds = Object.entries(getOwnerIds);
+
+        const checkedType = [];
+
+        if (ownerIds.length > 0) {
+            selectedEntries.forEach(([key, value]) => {
+
+                if (value) checkedType.push(ownerIds[Number(key)]);
+            });
+
+            const scheduleData = await GetScheduleListsAPI(
+                String(startOfWeek.format('YYYY-MM-DD')),
+                String(endOfWeek.format('YYYY-MM-DD')),
+                checkedType
+            );
+            // 가져온 그룹 리스트를 각각 셋팅하여 newEvents 에 담아준다.
+            const newEvents = scheduleData.map((item) => ({
+                id: item.scheduleId,
+                title: item.title,
+                date: moment(item.startDate),
+                endDate: moment(item.endDate),
+                groupColor: item.groupColor,
+            }));
+
+            setEvents(newEvents);
+        }
     };
 
 
+    const getHolidayName = (date) => {
+        const holiday = holidays.find(holiday => holiday.date === date);
+        return holiday ? holiday.name : null;
+    };
+
+    const slideAnim = useRef(new Animated.Value(0)).current;
+
+    const triggerAnimation = (direction) => {
+        Animated.sequence([
+            Animated.timing(slideAnim, {
+                toValue: direction === 'left' ? -1 : 1,
+                duration: 300,
+                useNativeDriver: true,
+                easing: Easing.ease,
+            }),
+            Animated.timing(slideAnim, {
+                toValue: 0,
+                duration: 0,
+                useNativeDriver: true,
+            })
+        ]).start();
+    };
+
     const goToPreviousMonth = () => {
+        const newMonth = currentMonth.clone().subtract(1, "month");
+        setMonthtDateVal(newMonth.format('YYYY-MM-DD'));
         triggerAnimation('left');
-        setCurrentMonth(currentMonth.clone().subtract(1, 'month'));
+        setCurrentMonth(newMonth);
+        setCurrentView(newMonth.format("YYYY-MM"));
     };
 
     const goToNextMonth = () => {
+        const newMonth = currentMonth.clone().add(1, "month");
+        setMonthtDateVal(newMonth.format('YYYY-MM-DD'));
         triggerAnimation('right');
-        setCurrentMonth(currentMonth.clone().add(1, 'month'));
+        setCurrentMonth(newMonth);
+        setCurrentView(newMonth.format("YYYY-MM"));
     };
 
     const renderDaysOfWeek = () => {
         const daysOfWeek = moment.weekdaysShort();
         return daysOfWeek.map((day, index) => (
             <View key={index} style={styles.dayOfWeekContainer}>
-                <Text style={{
-                    fontSize: 16,
-                    fontWeight: 'bold',
-                    color: isDarkMode ? Colors.white : Colors.darker
-                }}>{day}</Text>
+                <Text style={[
+                    styles.dayOfWeekText,
+                    index === 0 ? styles.sunday : index === 6 ? styles.saturday : null
+                ]}>
+                    {day}
+                </Text>
             </View>
         ));
     };
 
     const renderDaysInMonth = () => {
-        const startOfMonth = currentMonth.clone().startOf('month');
-        const endOfMonth = currentMonth.clone().endOf('month');
-        const startOfWeek = startOfMonth.clone().startOf('week');
-        const endOfWeek = endOfMonth.clone().endOf('week') + 1;
-
         const days = [];
         let day = startOfWeek.clone();
-
         while (day.isBefore(endOfWeek, 'day')) {
             const formattedDate = day.format('YYYY-MM-DD');
+            const isSunday = day.day() === 0;
+            const isSaturday = day.day() === 6;
+
+            // 공휴일 확인
+            const holidayName = getHolidayName(formattedDate);
             days.push(
                 <TouchableOpacity
                     key={day.format('YYYY-MM-DD')}
-                    style={[
-                        {
-                            width: '14.28%',
-                            height: 110,
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            borderWidth: 1,
-                            borderColor: isDarkMode ? Colors.white : Colors.darker
-                        },
-                        {
-                            backgroundColor: isDarkMode ? Colors.darker : Colors.white,
-                        },
-                    ]}
-                    onPress={() => handleDayPress(formattedDate, day)}
+                    style={styles.dayContainer}
+                    onPress={() => handleDayPress(formattedDate)}
                 >
-                    <View style={{ alignSelf: 'stretch' }}>
-                        <Text style={[styles.dayText, day.isSame(currentMonth, 'month') ? { color: isDarkMode ? Colors.white : Colors.darker } : styles.otherMonthDay]}>
+                    <View>
+                        <Text style={[
+                            styles.dayText,
+                            day.isSame(currentMonth, 'month') ?
+                                (isSunday ? styles.sunday : isSaturday ? styles.saturday : { color: Colors.darker }) :
+                                styles.otherMonthDay
+                        ]}>
                             {day.format('D')}
                         </Text>
                     </View>
+
+                    {/* 공휴일 이름 표시 */}
+                    {holidayName && (
+                        <View style={styles.holidayDot}>
+                            <Text style={{ color: 'red', fontSize: 10 }}>
+                                {holidayName}
+                            </Text>
+                        </View>
+                    )}
                     <View style={{ marginBottom: 80 }}>
                         {renderEventsForDay(day)}
                     </View>
@@ -106,85 +203,63 @@ const Month = () => {
         return days;
     };
 
-    const handleDayPress = (formattedDate, day) => {
-        onClick(formattedDate);
+    const handleDayPress = (formattedDate) => {
+        navigation.navigate('Day');
+        setStartDateVal(formattedDate);
     };
 
     const renderEventsForDay = (day) => {
         const dayEvents = events.filter(event => event.date.isSame(day, 'day'));
-        return dayEvents.map(event => (
-            <View key={event.id} style={styles.eventDot}>
-                <Text style={{ fontSize: 10 }}>
-                    {event.title}
-                </Text>
-            </View>
-        ));
+        const maxVisibleEvents = 5;
+
+        return (
+            <>
+                {dayEvents.slice(0, maxVisibleEvents).map(event => (
+                    <View key={event.id} style={[styles.eventDot, { backgroundColor: event.groupColor }]}>
+                        <Text style={styles.eventDotText} numberOfLines={1} ellipsizeMode="clip">
+                            {event.title}
+                        </Text>
+                    </View>
+                ))}
+                {dayEvents.length > maxVisibleEvents && (
+                    <Text style={styles.moreEventsText}>+{dayEvents.length - maxVisibleEvents} more</Text>
+                )}
+            </>
+        );
     };
 
     return (
-        <View style={{
-            flex: 1,
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-        }}>
-            {/* Month Navigation */}
-            <View style={styles.header}>
-                <TouchableOpacity onPress={goToPreviousMonth}>
-                    <Text style={styles.navButton}>‹</Text>
-                </TouchableOpacity>
-                <Text style={{
-                    fontSize: 20,
-                    fontWeight: 'bold',
-                    color: isDarkMode ? Colors.white : Colors.black
-                }}>{currentMonth.format('MMMM YYYY')}</Text>
-                <TouchableOpacity onPress={goToNextMonth}>
-                    <Text style={styles.navButton}>›</Text>
-                </TouchableOpacity>
-            </View>
-
-            {/* Days of the Week */}
+        <View style={{ flex: 1 }}>
             <View style={styles.daysOfWeekContainer}>
                 {renderDaysOfWeek()}
             </View>
+            <GestureHandlerRootView style={{ flex: 1 }}>
+                <PanGestureHandler
+                    onGestureEvent={(event) => {
+                        const { translationX } = event.nativeEvent;
 
-            {/* Animated View for Days in Month */}
-            <ScrollView>
-                <Animated.View
-                    style={[
-                        styles.daysContainer,
-                        {
-                            transform: [
-                                {
-                                    translateX: slideAnim.interpolate({
-                                        inputRange: [-1, 0, 1],
-                                        outputRange: [-300, 0, 300],
-                                    }),
-                                },
-                            ],
-                        },
-                    ]}
+                        if (!isSwiping) {
+                            if (translationX > width / 4) { // 오른쪽 스와이프
+                                setIsSwiping(true);
+                                goToPreviousMonth();
+                            } else if (translationX < -width / 4) { // 왼쪽 스와이프
+                                setIsSwiping(true);
+                                goToNextMonth();
+                            }
+                        }
+                    }}
+                    onEnded={() => setIsSwiping(false)} // 스와이프 종료 시 상태 복구
                 >
-                    {renderDaysInMonth()}
-                </Animated.View>
-            </ScrollView>
+                    <View style={styles.daysContainer}>
+                        {renderDaysInMonth()}
+                    </View>
+                </PanGestureHandler>
+            </GestureHandlerRootView>
         </View>
     );
 };
 
 const styles = StyleSheet.create({
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 20,
-    },
-    headerText: {
-        fontSize: 20,
-        fontWeight: 'bold',
-    },
-    navButton: {
-        fontSize: 30,
-        color: '#007AFF',
-    },
     daysOfWeekContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -192,30 +267,63 @@ const styles = StyleSheet.create({
     dayOfWeekContainer: {
         flex: 1,
         alignItems: 'center',
-        paddingVertical: 20,
+        backgroundColor: '#fff',
+        borderBottomWidth: 1,
     },
     dayOfWeekText: {
-        fontSize: 16,
+        fontSize: 12,
         fontWeight: 'bold',
     },
     daysContainer: {
         flexDirection: 'row',
         flexWrap: 'wrap',
+        backgroundColor: '#fff',
     },
-
     dayText: {
-        fontSize: 16,
+        fontSize: 12,
+        fontWeight: 'bold'
     },
     otherMonthDay: {
         color: '#aaa',
     },
+    sunday: {
+        color: 'red',
+    },
+    saturday: {
+        color: 'blue',
+    },
     eventDot: {
-        width: 50,
+        width: 56,
         height: 15,
+        borderRadius: 3,
+        margin: 1,
+
+    },
+    eventDotText: {
+        fontSize: 10,
+        bottom: 2,
+        color: '#fff',
+        fontWeight: '600'
+    },
+    holidayDot: {
+        width: 50,
+        height: 14,
         backgroundColor: '#f1c40f',
         borderRadius: 3,
     },
-});
+    dayContainer: {
+        width: '14.28%',
+        height: 122,
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        borderWidth: 1,
+        borderColor: '#E9E9E9',
+    },
+    moreEventsText: {
+        fontSize: 10,
+        fontWeight: '600',
 
+    },
+});
 
 export default Month;

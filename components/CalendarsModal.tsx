@@ -1,16 +1,24 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Text, View, Modal, StyleSheet, Pressable, TouchableOpacity, Image, useColorScheme } from "react-native";
 import { Colors } from "@/constants/Colors";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import dayjs from "dayjs";
+import IToday from '../assets/images/i_today.svg';
+import moment from 'moment';
 
-const CalendarsModal = () => {
-    const isDarkMode = useColorScheme() === 'dark';
+
+const CalendarsModal = ({ setStartDateVal, }) => {
     const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
     const toDay = dayjs(new Date()).format('D');
 
-    const showDatePicker = () => {
+    const LongshowDatePicker = () => {
         setDatePickerVisibility(true);
+    };
+
+    const currentDayMove = () => {
+        const today = moment().format('YYYY-MM-DD');
+        //console.log('오늘날짜 이동', today);
+        setStartDateVal(today);
     };
 
     const hideDatePicker = () => {
@@ -23,15 +31,15 @@ const CalendarsModal = () => {
     };
 
     return (
-        <View>
-            <TouchableOpacity onLongPress={showDatePicker}>
-                <View>
-                    <Image
-                        source={require('../assets/images/icon_calendar.png')}
-                        style={{ tintColor: isDarkMode ? Colors.white : Colors.dark, marginRight: 10, marginTop: 2 }}>
-                    </Image>
-
-                    <Text style={{ position: 'absolute', marginLeft: 9, marginTop: 9, color: isDarkMode ? Colors.white : Colors.dark }}>
+        <View style={{ marginLeft: '10%' }}>
+            <TouchableOpacity onPress={currentDayMove} onLongPress={LongshowDatePicker}>
+                <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+                    <IToday />
+                    <Text style={{
+                        position: 'absolute',
+                        textAlign: 'center',
+                        //marginRight: 50,
+                    }}>
                         {toDay}
                     </Text>
                 </View>

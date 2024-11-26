@@ -1,101 +1,72 @@
-import React from "react";
-import { View, Text, Image, TouchableOpacity, useColorScheme } from 'react-native'
-import { DrawerContentScrollView, DrawerItemList } from "@react-navigation/drawer";
-import { Colors } from "@/constants/Colors";
+import React, { useEffect, useState } from "react";
+import { View, Text, Image, TouchableOpacity, useColorScheme, StyleSheet } from 'react-native'
+import { DrawerContentScrollView, DrawerItemList, DrawerContentComponentProps } from "@react-navigation/drawer";
+import { useNavigation, } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
+import GetGroupList from "../GetGroupList";
+import { useAuth } from "../../utils/AuthContext"; // Context 불러오기
 
+const CustomDrawer = (props: any) => {
+    const [userName, setUserName] = useState<string>('');
+    const navigation = useNavigation();
+    const { isLoggedIn, setIsLoggedIn } = useAuth();
 
-const CustomDrawer = props => {
-    const isDarkMode = useColorScheme() === 'dark';
+    useEffect(() => {
+        async function loginCheckYn() {
+            if (isLoggedIn) {
+                const userName = await SecureStore.getItemAsync('saveUserName');
+                if (userName) {
+                    setUserName(userName);
+                }
+            }
+        }
+        loginCheckYn();
+    }, [isLoggedIn]);
+
     return (
-        <View style={{ flex: 1, backgroundColor: isDarkMode ? Colors.dark : Colors.white }}>
+        <View style={{ flex: 1, }}>
             <DrawerContentScrollView
                 {...props}>
-                <Image source={require('../../assets/images/logo.png')} style={{ marginHorizontal: 20 }} />
+                <View style={{ flexDirection: 'row' }}>
+                    <Image source={require('../../assets/images/logo.png')} style={{ marginHorizontal: 20, width: 200, height: 24, padding: 0 }} />
+                </View>
+                <View style={{ borderBottomWidth: 1, marginTop: 20 }}></View>
                 <Text
-                    style={{ color: isDarkMode ? Colors.white : Colors.dark, marginHorizontal: 20, fontSize: 20 }}>
-                    userName
+                    style={{ /*color: isDarkMode ? Colors.dark : Colors.dark,*/fontSize: 20, marginTop: 20, marginLeft: 20 }}>
+                    {userName}
                 </Text>
+                <View style={{ borderBottomWidth: 1, marginTop: 20 }}></View>
                 <View
-                    style={{ flex: 1, paddingTop: 10, backgroundColor: isDarkMode ? Colors.dark : Colors.white }}>
+                    style={{ flex: 1, paddingTop: 10, /*backgroundColor: isDarkMode ? Colors.dark : Colors.white */ }}>
                     <DrawerItemList {...props} />
                 </View>
+
+                <View style={{
+                    borderTopWidth: 1,
+                    /*borderTopColor: isDarkMode ? Colors.dark : Colors.dark,*/
+                    /*borderBottomColor: isDarkMode ? Colors.dark : Colors.dark*/
+                }}>
+                </View>
+                <GetGroupList />
+                <View style={{
+                    marginBottom: 220 /*borderTopColor: isDarkMode ? Colors.dark : Colors.dark,*/
+                    /*borderBottomColor: isDarkMode ? Colors.dark : Colors.dark*/
+                }}>
+                </View>
             </DrawerContentScrollView>
-            <View style={{
-                padding: 20, borderTopWidth: 1, borderBottomWidth: 1,
-                borderTopColor: isDarkMode ? Colors.white : Colors.dark,
-                borderBottomColor: isDarkMode ? Colors.white : Colors.dark
-            }}>
-                <TouchableOpacity onPress={() => { }} style={{ paddingVertical: 5 }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <Image source={require('../../assets/images/icon_refresh.png')} style={{ tintColor: isDarkMode ? Colors.white : Colors.dark }} />
-                        <Text style={{ fontSize: 15, marginLeft: 25, color: isDarkMode ? Colors.white : Colors.dark }}>
-                            새로고침
-                        </Text>
-                    </View>
-                </TouchableOpacity>
-            </View>
-            <View style={{
-                padding: 20, borderTopColor: isDarkMode ? Colors.white : Colors.dark,
-                borderBottomColor: isDarkMode ? Colors.white : Colors.dark
-            }}>
-                <TouchableOpacity onPress={() => { }} style={{ paddingVertical: 5 }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <Text style={{ fontSize: 15, marginLeft: 25, color: isDarkMode ? Colors.white : Colors.dark }}>
-                            모든일정
-                        </Text>
-                    </View>
-                </TouchableOpacity>
-            </View>
-            <View style={{
-                padding: 20, borderTopColor: isDarkMode ? Colors.white : Colors.dark,
-                borderBottomColor: isDarkMode ? Colors.white : Colors.dark
-            }}>
-                <TouchableOpacity onPress={() => { }} style={{ paddingVertical: 5 }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <Text style={{ fontSize: 15, marginLeft: 25, color: isDarkMode ? Colors.white : Colors.dark }}>
-                            개인일정
-                        </Text>
-                    </View>
-                </TouchableOpacity>
-            </View>
-            <View style={{
-                padding: 20, borderTopColor: isDarkMode ? Colors.white : Colors.dark,
-                borderBottomColor: isDarkMode ? Colors.white : Colors.dark
-            }}>
-                <TouchableOpacity onPress={() => { }} style={{ paddingVertical: 5 }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <Text style={{ fontSize: 15, marginLeft: 25, color: isDarkMode ? Colors.white : Colors.dark }}>
-                            부서일정
-                        </Text>
-                    </View>
-                </TouchableOpacity>
-            </View>
-            <View style={{
-                padding: 20, borderTopColor: isDarkMode ? Colors.white : Colors.dark,
-                borderBottomColor: isDarkMode ? Colors.white : Colors.dark
-            }}>
-                <TouchableOpacity onPress={() => { }} style={{ paddingVertical: 5 }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <Text style={{ fontSize: 15, marginLeft: 25, color: isDarkMode ? Colors.white : Colors.dark }}>
-                            회사일정
-                        </Text>
-                    </View>
-                </TouchableOpacity>
-            </View>
-            <View style={{
-                padding: 20, borderTopColor: isDarkMode ? Colors.white : Colors.dark,
-                borderBottomColor: isDarkMode ? Colors.white : Colors.dark
-            }}>
-                <TouchableOpacity onPress={() => { }} style={{ paddingVertical: 5 }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <Text style={{ fontSize: 15, marginLeft: 25, color: isDarkMode ? Colors.white : Colors.dark }}>
-                            협업일정
-                        </Text>
-                    </View>
-                </TouchableOpacity>
-            </View>
         </View >
     );
 }
+
+const styles = StyleSheet.create({
+    scheduleTypeContent: {
+        flexDirection: 'row'
+    },
+    scheduleType: {
+        fontSize: 15,
+        marginLeft: 25,
+    }
+});
 
 export default CustomDrawer;

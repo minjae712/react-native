@@ -1,21 +1,26 @@
-import React from 'react';
-import { Image, StyleSheet, Platform, StatusBar, useColorScheme } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
+import React, { useState } from 'react';
+import { Image, StyleSheet, StatusBar, useColorScheme } from 'react-native';
 import DrawerNavigator from '@/components/navigation/DrawerNavigator';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { Colors } from '@/constants/Colors';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { AuthProvider } from "../utils/AuthContext";
 
 export default function HomeScreen() {
-  const isDarkMode = useColorScheme() === 'dark';
+  // 1. currentView 상태와 setter 함수 정의
+  const [currentView, setCurrentView] = useState("YYYY-MM-DD"); // 초기값 설정
+
 
   return (
-    <>
-      <StatusBar backgroundColor={isDarkMode ? Colors.dark : Colors.light}></StatusBar>
-      <SafeAreaProvider>
-        <NavigationContainer independent={true}>
-          <DrawerNavigator />
-        </NavigationContainer>
-      </SafeAreaProvider>
-    </>
+    <SafeAreaProvider>
+      <StatusBar barStyle='dark-content'
+        translucent={true}
+        hidden={false}
+        backgroundColor="transparent" />
+      <AuthProvider>
+        <DrawerNavigator
+          currentView={currentView}
+          setCurrentView={setCurrentView}
+        />
+      </AuthProvider>
+    </SafeAreaProvider>
   );
 }

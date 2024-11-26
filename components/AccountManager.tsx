@@ -1,37 +1,37 @@
 import React, { useEffect, useState } from "react";
-import { Text, View, Modal, StyleSheet, Pressable, TouchableOpacity, useColorScheme } from "react-native";
+import { Text, View, Modal, StyleSheet, Pressable, TouchableOpacity, useColorScheme, Button, Image, Alert } from "react-native";
 import { Colors } from "@/constants/Colors";
-import { Ionicons } from "@expo/vector-icons";
 
+import IUser from '../assets/images/i_user.svg';
+import IClose from '../assets/images/i_close.svg'
+import { Logout } from "@/utils/Logout";
+import { useNavigation } from '@react-navigation/native';
 
 const AccountManager = () => {
-    const isDarkMode = useColorScheme() === 'dark';
-    const [isModalVisible, setisModalVisible] = useState(false);
-
-    useEffect(() => {
-
-    }, []);
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const navigation = useNavigation();
 
     const onPressModalOpen = () => {
-        console.log('팝업이 열린다.');
-        setisModalVisible(true);
+        setIsModalVisible(true);
     }
 
     const onPressModalClose = () => {
-        console.log('팝업이 닫힌다.');
-        setisModalVisible(false);
-    }
+        setIsModalVisible(false);
+    };
+
+    const handleLogout = async () => {
+        await Logout();
+        setIsModalVisible(false);
+        navigation.navigate('Login');
+    };
 
     return (
         <View>
             <TouchableOpacity onPress={onPressModalOpen}>
-                <Ionicons name="person-circle-outline" size={40} color={isDarkMode ? Colors.white : Colors.dark}
-                    style={{
-                        width: 40,
-                        marginRight: 5,
-                    }} />
+                <View style={{ marginRight: 15 }}>
+                    <IUser />
+                </View>
             </TouchableOpacity>
-
 
 
             <Modal animationType="fade"
@@ -39,23 +39,31 @@ const AccountManager = () => {
                 transparent={true}>
 
                 <View style={{
-                    marginTop: 120,
-                    margin: 20,
-                    borderRadius: 20,
-                    padding: 170,
+                    justifyContent: 'center',
                     alignItems: 'center',
-                    backgroundColor: isDarkMode ? Colors.dark : Colors.white
+                    width: '70%',
+                    height: '65%',
+                    padding: 20,
+                    borderRadius: 20,
+                    top: '20%',
+                    left: '15%',
+                    backgroundColor: Colors.white
                 }}>
-                    <View style={{ position: 'absolute' }}>
-                        <View style={{ position: 'absolute', marginLeft: 130 }}>
-                            <Pressable onPress={onPressModalClose}>
-                                <Ionicons name="close" size={35} color={isDarkMode ? Colors.white : Colors.dark} />
-                            </Pressable>
-                        </View>
+                    <View style={{
+                        position: 'absolute', top: 20, left: 20
+                    }}>
+                        <Pressable onPress={onPressModalClose}>
+                            <IClose />
+                        </Pressable>
                     </View>
-                    <View>
-                        <Text>계정관리.</Text>
-                    </View>
+
+                    <Pressable style={{
+                        flex: 1,
+                        justifyContent: 'center',
+                        alignItems: 'center'
+                    }}>
+                        <Button title="로그아웃" onPress={handleLogout} />
+                    </Pressable>
                 </View >
             </Modal >
         </View >

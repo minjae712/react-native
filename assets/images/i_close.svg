@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+  <g id="그룹_3" data-name="그룹 3" transform="translate(-1.027 -1.179)">
+    <rect id="사각형_5" data-name="사각형 5" width="24" height="24" transform="translate(1.027 1.179)" fill="none"/>
+    <g id="그룹_92" data-name="그룹 92" transform="translate(-35.482 0.002)">
+      <g id="그룹_89" data-name="그룹 89" transform="translate(38.991 3.659)">
+        <g id="그룹_90" data-name="그룹 90" transform="translate(0 0)">
+          <line id="선_10" data-name="선 10" x1="16.139" y1="16.139" transform="translate(1.448 1.448)" fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.4"/>
+        </g>
+      </g>
+      <g id="그룹_91" data-name="그룹 91" transform="translate(58.027 3.659) rotate(90)">
+        <g id="그룹_90-2" data-name="그룹 90" transform="translate(0 0)">
+          <line id="선_10-2" data-name="선 10" x1="16.139" y1="16.139" transform="translate(1.448 1.448)" fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.4"/>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>
