@@ -1,19 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 
-import { View, StyleSheet, SafeAreaView, Alert, TouchableOpacity, Dimensions } from 'react-native';
-import { createDrawerNavigator, DrawerContentScrollView, DrawerItem } from '@react-navigation/drawer';
-
+import { View, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import { createDrawerNavigator, } from '@react-navigation/drawer';
+import { useFocusEffect } from '@react-navigation/native';
 import CurrentDate from "../CurrentDate";
-//import { Colors } from "@/constants/Colors";
-//import Day from "../DayCalendar";
 import DayBottomTabNavigator from "./DayBottomTabNavigator";
-import Day from "../DayCalendar";
-import Week from "../WeekCalendar";
 import WeekBottomTabNavigator from "./WeekBottomTabNavigator";
-import Month from "../MonthCalendar";
 import MonthBottomTabNavigator from "./MonthBottomTabNavigator";
 import CustomDrawer from "./CustomDrawer";
-//import HeaderStackNavigator from "./HeaderStackNavigator";
 import MainLoginPage from "../MainLoginPage";
 import CalendarsModal from "../CalendarsModal";
 import IDaliy from '../../assets/images/i_DailyReport.svg';
@@ -32,10 +26,12 @@ const Drawer = createDrawerNavigator();
 const DrawerNavigator: React.FC<DrawerNavigatorProps> = () => {
     const [currentView, setCurrentView] = useState('');
     const [startDateVal, setStartDateVal] = useState('');
+    const [goToDay, setGoToDay] = useState('');
 
     const [dayDateVal, setDaytDateVal] = useState('');
     const [weekDateVal, setWeektDateVal] = useState('');
     const [monthDateVal, setMonthtDateVal] = useState('');
+    console.log(goToDay, '****goToDay');
 
     return (
         <>
@@ -58,7 +54,7 @@ const DrawerNavigator: React.FC<DrawerNavigatorProps> = () => {
                             </TouchableOpacity>
                             <View>
                                 <CalendarsModal
-                                    setStartDateVal={setStartDateVal}
+                                    setGoToDay={setGoToDay}
                                 />
                             </View>
                             <View>
@@ -101,6 +97,7 @@ const DrawerNavigator: React.FC<DrawerNavigatorProps> = () => {
                             setWeektDateVal={setWeektDateVal}
                             monthDateVal={monthDateVal}
                             setMonthtDateVal={setMonthtDateVal}
+                            goToDay={goToDay}
                         />
                     )}
                 </Drawer.Screen>
@@ -122,6 +119,7 @@ const DrawerNavigator: React.FC<DrawerNavigatorProps> = () => {
                             setDaytDateVal={setDaytDateVal}
                             monthDateVal={monthDateVal}
                             setMonthtDateVal={setMonthtDateVal}
+                            goToDay={goToDay}
                         />
                     )}
                 </Drawer.Screen>
@@ -144,6 +142,7 @@ const DrawerNavigator: React.FC<DrawerNavigatorProps> = () => {
                             weekDateVal={weekDateVal}
                             setDaytDateVal={setDaytDateVal}
                             setWeektDateVal={setWeektDateVal}
+                            goToDay={goToDay}
                         />
                     )}
                 </Drawer.Screen>

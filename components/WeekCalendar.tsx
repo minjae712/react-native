@@ -57,7 +57,7 @@ const Week = ({ setCurrentView, setWeektDateVal, dayDateVal, setDaytDateVal, mon
       setMonthtDateVal('');
       loadItemsForWeek(initialDate);
       setWeektDateVal(initialDate);
-      setCurrentView(moment(initialDate).format('YYYY-MM'))
+      setCurrentView(moment(initialDate).format('YYYY-MM'));
     }, [startDate, checkedItem, dayDateVal, monthDateVal])
   );
 

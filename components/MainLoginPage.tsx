@@ -114,7 +114,6 @@ const MainLoginPage = () => {
                 } else {
                     Alert.alert('아이디 또는 비밀번호가 틀립니다.');
                     setModalVisible(true); // 로그인 실패 시 모달을 보여줍니다.
-                    setButtonVisible(false);
                     setUserId('');
                     setUserPassword('');
                 }
@@ -122,7 +121,6 @@ const MainLoginPage = () => {
                 Alert.alert('자동 로그인 중 오류가 발생했습니다.');
                 console.error(error);
                 setModalVisible(true);
-                setButtonVisible(false);
                 setUserId('');
                 setUserPassword('');
             }

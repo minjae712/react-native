@@ -7,9 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import GetScheduleListsAPI from '../restAPIComponents/GetScheduleListsAPI';
 import Collapsible from 'react-native-collapsible';
 import IarrowAllday from '../assets/images/i_arrow_allday.svg'
-import { useNavigation } from "@react-navigation/native";
 import DetailModal from './DetailModal';
-
 
 const { width } = Dimensions.get('window');
 
@@ -23,12 +21,11 @@ const generate1HourFormat = () => {
 };
 
 const Day = ({ setCurrentView, startDateVal, setDaytDateVal, weekDateVal, setWeektDateVal,
-  monthDateVal, setMonthtDateVal }) => {
+  monthDateVal, setMonthtDateVal, goToDay }) => {
   const [selectedDate, setSelectedDate] = useState(moment().format('YYYY-MM-DD'));
   const [items, setItems] = useState({});
   const [isSwiping, setIsSwiping] = useState(false);  // 스와이프 잠금 상태
   const hours = generate1HourFormat();
-  //const [dayOfWeek, setDayOfWeek] = useState(days[moment(selectedDate).day()]);
   const route = useRoute();
   const { checkedItem } = route.params || {};
   const [allDayEvents, setAllDayEvents] = useState([]);
@@ -39,7 +36,7 @@ const Day = ({ setCurrentView, startDateVal, setDaytDateVal, weekDateVal, setWee
   const [selectedGroupColor, setSelectedGroupColor] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [refreshing, setRefreshing] = React.useState(false);
-
+  console.log('***', goToDay);
   useFocusEffect(
     useCallback(() => {
       const initialDate = startDateVal
@@ -48,13 +45,16 @@ const Day = ({ setCurrentView, startDateVal, setDaytDateVal, weekDateVal, setWee
           ? moment(weekDateVal).format('YYYY-MM-DD')
           : monthDateVal
             ? moment(monthDateVal).format('YYYY-MM-DD')
-            : selectedDate;
+            : goToDay
+              ? moment(goToDay).format('YYYY-MM-DD')
+              : selectedDate;
+      console.log('***', initialDate);
       setDaytDateVal(initialDate);
       setWeektDateVal('');
       setMonthtDateVal('');
       setSelectedDate(initialDate);
       loadItemsForDay(initialDate);
-    }, [startDateVal, checkedItem, weekDateVal, monthDateVal])
+    }, [startDateVal, checkedItem, weekDateVal, monthDateVal, goToDay])
   );
 
   //리프레쉬 구현 예정
@@ -305,9 +305,9 @@ const Day = ({ setCurrentView, startDateVal, setDaytDateVal, weekDateVal, setWee
                 <Text>{renderAllDayEvents()}</Text>
                 <Collapsible collapsed={isCollapsed} >
                   {hiddenEvents.map((event) => (
-                    <View key={event.id} style={[styles.AlleventContainer, { backgroundColor: event.groupColor }]}>
+                    <TouchableOpacity onPress={() => detailEventPress(event)} key={event.id} style={[styles.AlleventContainer, { backgroundColor: event.groupColor }]}>
                       <Text style={styles.eventTitle}>{event.title}</Text>
-                    </View>
+                    </TouchableOpacity>
                   ))}
                 </Collapsible>
               </View>

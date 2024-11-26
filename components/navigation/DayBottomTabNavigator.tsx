@@ -28,7 +28,7 @@ const TabInsertModal = ({ openModal }: { openModal: () => void }) => (
 );
 
 const DayBottomTabNavigator = ({ setCurrentView, startDateVal, setDaytDateVal, weekDateVal,
-  setWeektDateVal, monthDateVal, setMonthtDateVal }: any) => {
+  setWeektDateVal, monthDateVal, setMonthtDateVal, goToDay }: any) => {
   const [modalVisible, setModalVisible] = useState(false);
 
   // Modal controls
@@ -62,6 +62,7 @@ const DayBottomTabNavigator = ({ setCurrentView, startDateVal, setDaytDateVal, w
               setWeektDateVal={setWeektDateVal}
               monthDateVal={monthDateVal}
               setMonthtDateVal={setMonthtDateVal}
+              goToDay={goToDay}
             />
           )}
         </Tab.Screen>

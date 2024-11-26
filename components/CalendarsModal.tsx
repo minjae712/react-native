@@ -1,24 +1,23 @@
 import React, { useState } from "react";
 import { Text, View, Modal, StyleSheet, Pressable, TouchableOpacity, Image, useColorScheme } from "react-native";
-import { Colors } from "@/constants/Colors";
+
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import dayjs from "dayjs";
+
 import IToday from '../assets/images/i_today.svg';
 import moment from 'moment';
 
 
-const CalendarsModal = ({ setStartDateVal, }) => {
+const CalendarsModal = ({ setGoToDay, }) => {
     const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
-    const toDay = dayjs(new Date()).format('D');
+    const toDay = moment(new Date()).format('YYYY-MM-DD');
 
     const LongshowDatePicker = () => {
         setDatePickerVisibility(true);
     };
 
-    const currentDayMove = () => {
-        const today = moment().format('YYYY-MM-DD');
-        //console.log('오늘날짜 이동', today);
-        setStartDateVal(today);
+    function currentDayMove() {
+        console.log('오늘날짜 이동', toDay);
+        setGoToDay(toDay);
     };
 
     const hideDatePicker = () => {
@@ -40,7 +39,7 @@ const CalendarsModal = ({ setStartDateVal, }) => {
                         textAlign: 'center',
                         //marginRight: 50,
                     }}>
-                        {toDay}
+                        {moment(toDay).format('D')}
                     </Text>
                 </View>
             </TouchableOpacity>
